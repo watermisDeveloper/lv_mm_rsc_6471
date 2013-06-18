@@ -1,0 +1,11 @@
+{use_macro file="Dataface_Main_Template.html"}
+    {fill_slot name="main_column"}
+        <h1>Synchronization</h1>
+        <p>{define_slot name='sync_message'}{/define_slot}</p>
+        <p>For synchronization please select the sync ZIP archive below:</p>
+        <form action="sync.php" method="post" enctype="multipart/form-data">
+            <input type="file" name="zipfile" /><br>
+            <input type="submit" value="Start" />
+        </form>
+    {/fill_slot}
+{/use_macro}
