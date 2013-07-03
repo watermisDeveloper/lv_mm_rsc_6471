@@ -57,33 +57,34 @@ $(document).ready(function() {
 
 /* enabled tooltips */
 $(function(){
-    $(document).tooltip();
+    $(document).tooltip;
 });
 
 
 /* OpenLayers map settings */
-var map, hydrostations, meteostations,view_hydro,view_meteo, selectControl, bounds, ask;
+var map, hydrostations, meteostations,view_hydro,view_meteo, rwandabounds, ask, popupTT, timeseriesAvail;
 var nb1_wms, nb2_wms, district_wms;
 var Meta = new Array();
+var selectControl, hoverControl, panelCustomNavToolbar, CustomNavToolbar;
 function init_map() {
     //create map object
     /* Set the bounds of your geographical area, by
    specifying bottom-left (bl) and top right
    (tr) corners */
-   bounds = new OpenLayers.Bounds();
+   rwandabounds = new OpenLayers.Bounds();
         var bl_point = new OpenLayers.LonLat(3172900,-332400);
         var tr_point = new OpenLayers.LonLat(3477000,-70700);
  //       var bl_point = new OpenLayers.LonLat(19.3, 34.75);
  //       var tr_point = new OpenLayers.LonLat(29.65,41.8);
-        bounds.extend(bl_point);
-        bounds.extend(tr_point);
+        rwandabounds.extend(bl_point);
+        rwandabounds.extend(tr_point);
 
     //Define the MAP Options//
     var options = {
         'units' :   "m",
-        'numZoomLevels' :   21,
+        'numZoomLevels' :   28,
         'sphericalMercator': true,
-        'maxExtent': bounds,
+        'maxExtent': rwandabounds,
         'projection'    :   new OpenLayers.Projection("EPSG:900913"),
         'displayProjection':    new OpenLayers.Projection("EPSG:4326")
         };
@@ -97,15 +98,12 @@ function init_map() {
     map.addLayer(new OpenLayers.Layer.Google("Google Street Map", {visibility: false}));
     map.addLayer(new OpenLayers.Layer.Google( "Google Physical",{type: google.maps.MapTypeId.TERRAIN}));
     map.addLayer(new OpenLayers.Layer.Google( "Google Hybrid",{type: google.maps.MapTypeId.HYBRID, numZoomLevels: 20}));
-
     
     /* Set map Center and extend to show entire Rwanda */
     map.setCenter(new OpenLayers.LonLat(30.071100, -1.958018).transform(
             new OpenLayers.Projection('EPSG:4326'), map.getProjectionObject()), 8);
     map.addControl(new OpenLayers.Control.LayerSwitcher());
     map.addControl(new OpenLayers.Control.OverviewMap());
-//    map.addControl(new OpenLayers.Control.MousePosition());
-    //map.addControl(new OpenLayers.Control.MousePosition());
     var AMousePosition = new OpenLayers.Control.MousePosition();
     map.addControl(AMousePosition);
     $("div.olControlMousePosition").css("bottom","5px");
@@ -113,7 +111,7 @@ function init_map() {
      *  Just Hiding the object is not a good way, but works*/
     $('.olControlZoom').css('display', 'none');
     map.addControl(new OpenLayers.Control.PanZoomBar());
-    
+       
     /* do some styling*/
     $('.layersDiv').css('border-radius', '15px');
     $('.layersDiv').css('box-shadow','0px 0px 1.5em rgb(153,153,153)');
@@ -121,7 +119,7 @@ function init_map() {
     $('.layersDiv').css('color','black');
 
     /*create the wms layers (nb123 etc...)*/
-    nb1_wms = new OpenLayers.Layer.WMS("Catchment level 1 ows", "http://41.215.250.87:8080/geoserver/ows?",
+    nb1_wms = new OpenLayers.Layer.WMS("Catchment level 1", "http://41.215.250.87:8080/geoserver/ows?",
             {   layers: 'nwrmp_wgs84tm:NB1_wgs84tm',styles: 'NB1',transparent: true,format: 'image/png'},
             {   isBaseLayer: false,opacity: 0.8,tiled: false}
           );
@@ -153,7 +151,7 @@ function init_map() {
     hydrostations = new OpenLayers.Layer.Vector('Hydrological Stations', {
         styleMap: new OpenLayers.StyleMap({
             externalGraphic: 'images/marker_blue.png',
-            graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
+            graphicWidth: 20, graphicHeight: 24, graphicYOffset: -15,
             pointRadius: 10
             //title: '{$tooltip}'
         })
@@ -166,7 +164,7 @@ function init_map() {
     meteostations = new OpenLayers.Layer.Vector('Meteorological Stations', {
         styleMap: new OpenLayers.StyleMap({
             externalGraphic: 'images/marker_red.png',
-            graphicWidth: 20, graphicHeight: 24, graphicYOffset: -24,
+            graphicWidth: 20, graphicHeight: 24, graphicYOffset: -15,
             title: '{$tooltip}', pointRadius: 10
         })
     });
@@ -178,42 +176,149 @@ function init_map() {
     selectControl = new OpenLayers.Control.SelectFeature([hydrostations, meteostations],{
         clickout: true,
         multiple: false,
+        hover: false,
         onSelect: showInfoBox,
         onUnselect: hideInfoBox
+//QUESTION FOR MIRKO, I'm trying to get this pan control activated!!!! - LV,
+        //trigger: function() {panelCustomNavToolbar.activateControl(controls[0]);}
     });
     map.addControl(selectControl);
     selectControl.activate();
-    
-    //DEV
-    var ANavToolBar = new OpenLayers.Control.NavToolbar();
-    ANavToolBar.events.on({activate:function(){
-            selectControl.deactivate();
-            selectControl.activate();
-    }});
-    map.addControl(ANavToolBar);
+
+    hoverControl = new OpenLayers.Control.SelectFeature([hydrostations, meteostations], {
+                hover: true,
+                highlightOnly: true,
+                renderIntent: "temporary",
+                eventListeners: {
+                   featurehighlighted: function(evt) {
+                    
+                    var lonlat = new OpenLayers.LonLat(
+                        evt.feature.geometry.x,
+                        evt.feature.geometry.y
+                    );
+                    
+                    var html = "<p>"+Meta[''+evt.feature.id].id+" "+Meta[''+evt.feature.id].name+"</p>" //evt.feature.attributes.name;
+
+                    popupTT = new OpenLayers.Popup.AnchoredBubble(
+                        'myPopup',
+                        lonlat,
+                        new OpenLayers.Size(120,20),
+                        html, 
+                        {size: {w: 14, h: 14}, offset: {x: -7, y: -7},
+//QUESTION FOR MIRKO: the backgroundcolor odes not seem to work (
+                        style: {backgroundColor: '#C0C0C0'}},
+                        false
+                    );
+                  
+                    evt.feature.popup = popupTT;
+                    map.addPopup(popupTT);
+                },
+                featureunhighlighted: function(evt) {
+                    map.removePopup(evt.feature.popup);
+                }}});
+
+            map.addControl(hoverControl);
+            hoverControl.activate();
+            
+    //Creation of a custom panel with a ZoomBox control with the alwaysZoom option sets to true
+    OpenLayers.Control.CustomNavToolbar = OpenLayers.Class(OpenLayers.Control.Panel, {
+
+        /**
+        * Constructor: OpenLayers.Control.NavToolbar
+        * Add our two mousedefaults controls.
+        * Parameters:
+        * options - {Object} An optional object whose properties will be used
+        * to extend the control.
+        */
+
+        initialize: function(options) {
+            OpenLayers.Control.Panel.prototype.initialize.apply(this, [options]);
+            this.addControls([
+                new OpenLayers.Control.Navigation({title:"Click to activate pan tool",
+//QUESTION FOR MIRKO: This trigger function does not seem to be working like in the 3rd Control.Button below...
+//After using control, selectControl not working
+                    trigger: function() {initSelectControl();}}),
+                //Here it come
+                new OpenLayers.Control.ZoomBox({title:"Click to activate zoom tool", 
+//QUESTION FOR MIRKO: This trigger function does not seem to be working like in the 3rd Control.Button below...
+//After using control, selectControl not working
+                    trigger: function() {initSelectControl();}}),
+                new OpenLayers.Control.Button({title: "Click to go to max extent", 
+                    id: 'btnMaxExtent',       
+                    type: OpenLayers.Control.TYPE_BUTTON,
+                    trigger: function() {map.zoomToExtent(rwandabounds); initSelectControl();}})
+                ]);
+            // To make the custom navtoolbar use the regular navtoolbar style
+            this.displayClass = 'olControlNavToolbar';
+        },
+
+        /**
+        * Method: draw
+        * calls the default draw, and then activates mouse defaults.
+        */
+        draw: function() {
+            var div = OpenLayers.Control.Panel.prototype.draw.apply(this, arguments);
+            this.activateControl(this.controls[0]);
+            return div;
+        }
+    });
+    var panelCustomNavToolbar = new OpenLayers.Control.CustomNavToolbar();
+        panelCustomNavToolbar.events.on({activate:initSelectControl()
+//            selectControl.deactivate();
+//            selectControl.activate();
+//            //Remove all popups
+//            while( map.popups.length ) {
+//                map.removePopup(map.popups[0]);
+//                }
+    });
+    map.addControl(panelCustomNavToolbar);
     $("div.olControlNavToolbar").css("top","5px");
-    $("div.olControlNavToolbar").css("left","40px");
-    
+    $("div.olControlNavToolbar").css("left","60px");
+    map.addControl(new OpenLayers.Control.ScaleLine());
 }
 
-
+function initSelectControl() {
+    //Remove all popups
+    while( map.popups.length ) {
+           map.removePopup(map.popups[0]); 
+       };
+    selectControl.deactivate();
+    selectControl.activate();
+   
+}
 function showInfoBox(feature) {
     selectedFeature = feature;
-    //create a popup
+    //Before creating a popup, remove all popups
+    while( map.popups.length ) {
+         map.removePopup(map.popups[0]);
+        }
+
+//panelCustomNavToolbar.activateControl(Navigation())
+    //Does the feature have timeseries?
+    if(Meta[''+feature.id].ts == 'yes'){
+        timeseriesAvail = 'with timeseries';
+    }
+    else {  
+        timeseriesAvail = '(no timeseries)'; 
+    }
+    //Create it
     popup = new OpenLayers.Popup.FramedCloud('Info Box',
                 feature.geometry.getBounds().getCenterLonLat(),
                 null,
                 "<div>Station Name: "+Meta[''+feature.id].name+"</div>"+
                 "<p>Station ID: "+Meta[''+feature.id].id+"</p>"+
                 "<a href='index.php?-table=stations&name_station="+Meta[''+feature.id].name+"&-action=browse'>"+
-                "Jump to this Station</a>",
+                "Jump to this Station "+timeseriesAvail+"</a>",
                 null, true, closePopup);
-    //color setting
-    if(Meta[''+feature.id].ts == 'yes'){
-        popup.backgroundColor = '#81F781';
-    }
-    else { popup.backgroundColor = '#FA5858'; }
+//    //color setting (NOT WORKING??)
+//    if(Meta[''+feature.id].ts == 'yes'){
+//        popup.backgroundColor = '#81F781';
+//    }
+//    else { popup.backgroundColor = '#FA5858'; }
     feature.popup = popup;
+    //When selecting feature, implement PAN TO
+    apoint = feature.geometry.getBounds().getCenterLonLat();
+    map.panTo(apoint);
     map.addPopup(popup);
 }
 
