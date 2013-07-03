@@ -22,6 +22,7 @@ div#site_logo {
     margin-bottom: 0px !important;
 }
 
+/* -------- hide not-used actions -------- */
 .contentActions {
     display: none;
 }
@@ -35,6 +36,18 @@ ul#table_selection_tabs {
 
 #main_column {
     width: 940px !important;
+}
+
+ul#record_tabs {
+    display: none;
+}
+
+ul#result-list-actions {
+    display: none;
+}
+
+div#selected-actions {
+    display: none;
 }
 
 table#main_table {

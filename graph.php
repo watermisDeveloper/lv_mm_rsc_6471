@@ -189,9 +189,8 @@ $(document).ready(function(){
         <div class="main">
             <?php df_display(array(),'Dataface_Logo.html');?>
             <ul class="sidebar">
-                <li><a href="<?php echo 'index.php?-table=sensors&-action=view&type_station='.
-                        $record->val('type_station').'&id_station='.$record->val('id_station').'&sensor='.
-                        $record->val('sensor').'&type_timeseries='.$record->val('type_timeseries').''; ?>">
+                <li><a href="<?php echo 'index.php?-table=stations&-action=view&type_station='.
+                        $record->val('type_station').'&id_station='.$record->val('id_station').''; ?>">
                         <img src="images/sb_back.png" alt="  " /><span>back</span></a></li>
                 <li><div  id="sb_table"><img src="images/sb_table.gif" alt="  " /><span>table</span></div></li>
                 <li><div id="sb_structure"><img src="images/sb_structure.png" alt="  " /><span>structure</span></div></li>
@@ -210,7 +209,21 @@ $(document).ready(function(){
                         echo "<tr><td>";
                         $date = new DateTime;
                         date_timestamp_set($date, $row[0]);
-                        echo $date->format('d.m.Y');
+                        if ($agg === 'D'){
+                            echo $date->format('d.m.Y H');
+                        }
+                        elseif ($agg === 'J'){
+                            echo $date->format('d.m.Y');
+                        }
+                        elseif ($agg === 'M'){
+                            echo $date->format('M Y');
+                        }
+                        elseif ($agg === 'A') {
+                            echo $date->format('Y');                 
+                        }
+                        else {
+                            echo $date->format('d.m.Y H:i');
+                        }
                         echo "</td><td>{$row[1]} </td></tr>";
                     }
                     ?>
