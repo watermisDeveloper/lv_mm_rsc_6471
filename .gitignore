@@ -222,6 +222,7 @@ images/
 doc/
 js/bxslider/
 js/bxSlider/
-js/ol/
 nbproject/
 templates_c/
+/js/ol/
+!/js/ol/theme/
