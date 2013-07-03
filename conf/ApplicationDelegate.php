@@ -168,7 +168,7 @@ class conf_ApplicationDelegate {
     /**
      * as the logged in user is an admin, include a Edit Message link on 
      * synchronization page to redirect to an editing form for the message, to 
-     * be shown on sync page 
+     * be shown on sync&import page 
      * 
      * @version 1.0
      * @author Mirko Maelicke <mirko@maelicke-online.de>
@@ -191,6 +191,58 @@ class conf_ApplicationDelegate {
             echo 'No sync message found in database!';
         }
     }
+    
+    /**
+     * as the logged in user is an admin, include a Import Message link on 
+     * synchronization page to redirect to an editing form for the message, to 
+     * be shown on sync&import page 
+     * 
+     * @version 1.1
+     * @author Mirko Maelicke <mirko@maelicke-online.de>
+     */
+    function block__import_message(){
+        $auth =& Dataface_AuthenticationTool::getInstance();
+        $user =& $auth->getLoggedInUser();
+        $content = df_get_record('startpage', array('element'=>'import_message'));
+        
+        if (isset($content)) {
+            echo $content->val('content');
+            if (isset($user) && ($user->val('Role') == 'admin_system') || $user->val('Role') == 'admin_data'){
+                echo "<br><a href='index.php?-table=startpage&-action=edit&element=import_message' style='float:right;'>
+                    Edit message</a><br>";
+            }
+            echo "<h1>  </h1>";
+
+            
+        } else {
+            echo 'No import message found in database!';
+        }
+    }
+    
+    /**
+     * as the logged in user is at leastan udi_data, include an import form 
+     * containing user information, used in <import.php> 
+     * 
+     * @version 1.1
+     * @author Mirko Maelicke <mirko@maelicke-online.de>
+     */
+    function block__import_form(){
+        $app =& Dataface_Application::getInstance();
+        $auth =& Dataface_AuthenticationTool::getInstance();
+        $user =& $auth->getLoggedInUser();
+        $query = df_query('select role_name, hierachy from mis_users_role_hierachy');
+        while ($row = mysql_fetch_row($query)){$hierachy[$row[0]]= $row[1]; }
+
+        if (isset($user) && $hierachy[$user->val('Role')] >= $hierachy['udi_data']){
+            echo '<form action="import.php" method="post" enctype="multipart/form-data">'.
+                    '<input type="file" name="file" /><br><span style="font-size: 150%;">Separation Char:   </span>'.
+                    '<input type="text" id="deli" name="delimeter" value="," style="width: 20px" /><br>'.
+                    '<input type="submit" value="Import" /><input type="hidden" name="user" value=\''.
+                    $user->val('Role').'\' /></form>';
+        }
+    }
+
+
     
     /**
      * as the logged in user is an admin, create a Snyc error report from

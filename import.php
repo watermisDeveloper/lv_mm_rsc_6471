@@ -3,11 +3,9 @@
     <head>
 <?php 
 //define some stuff, should be given by df later on
-if(isset($_POST['meta'])){
+if(isset($_POST['user'])){
     $delimeter = $_POST['delimeter'];
-    $meta = json_decode($_POST['meta']);
-    $user = $meta[0];
-    $station = $meta[1];
+    $user = $_POST['user'];
 }
 ?>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -17,12 +15,10 @@ if(isset($_POST['meta'])){
             /* As the Upload is aborted, delete the file*/
             if (isset($_POST['discard'])){
                 unlink($_POST['filename']);
-                $station = json_decode($_POST['station']);
+                
                 die('Upload has sucessfully been aborted. You can close this Page or 
-                    <a href="index.php?-table=stations&-action=browse&type_station='.
-                        $station[0].'&id_station='.$station[1].'">go back to '.$station[1].'('.$station[0].') now</a>
-                    <meta http-equiv="refresh" content="5; URL=index.php?-table=stations&-action=browse&type_station='.
-                        $station[0].'&id_station='.$station[1].'">');
+                    <a href="index.php?-table=startpage&-action=startSync">go back to import page now</a>
+                    <meta http-equiv="refresh" content="5; URL=index.php?-table=startpage&-action=startSync">');
             }
             if (!isset($_FILES['file'])){ die('The file could not be found or is damaged!'); }
             /* move uploaded file to new location */
@@ -112,7 +108,6 @@ if(isset($_POST['meta'])){
         <div id="page">
         <div>
         <h1>Preview</h1>
-        <h3><?php echo "calling station:".$station[1]."(".$station[0].")";?></h3>
         <table border="1" style="text-align: center;" id='preview'>
             <tr><th>type_station</th><th>id_station</th><th>sensor</th><th>type_timeseries</th>
             <th>mydate</th><th>myvalue</th><th>origin</th><th>quality</th></tr>
@@ -123,14 +118,7 @@ if(isset($_POST['meta'])){
                 if ($j < 25){
                     echo "<tr>";
                     foreach($row as $cell){
-                        echo "<td";
-                        if ($i == 0 && $cell == $station[0]){ echo ">$cell</td>";}
-                        else if ($i == 1 && $cell == $station[1]){ echo ">$cell</td>";}
-                        else if ($i > 1) {  echo ">$cell</td>";}
-                        else { 
-                            echo " style='background-color: yellow;'>$cell</td>";
-                            $warning = TRUE;
-                        } 
+                        echo "<td>$cell</td>";
                         $i++;
                     }
                     echo "</tr>";
@@ -138,8 +126,6 @@ if(isset($_POST['meta'])){
                 $j++;
             }
             ?> 
-        
-
             </table>
         
         <?php if (isset($warning)){?>

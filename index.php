@@ -1,4 +1,4 @@
 <?php 
-require_once '../xataface/dataface-public-api.php';
-df_init(__FILE__, '../xataface')->display();
+require_once '../xataface2/dataface-public-api.php';
+df_init(__FILE__, '../xataface2')->display();
 ?>
