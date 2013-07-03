@@ -83,43 +83,48 @@ class tables_stations {
     }
     
     /**
-     * Create a new section for each station record to include a import form
-     * linking to import action preview page <import.php>
+     * Create a new section for each station record to include several links to
+     * related record pages. should link to all sensors by dropdown and to 
+     * discharge related tables for discharge sensors
      * 
      * @see actions_applyImport
      * @version 1.0
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
-    function section__import(){
+    function section__links(){
         $app =& Dataface_Application::getInstance();
-        $record =& $app->getRecord();
-         $auth =& Dataface_AuthenticationTool::getInstance();
-         $user =& $auth->getLoggedInUser();
-        $query = df_query('select role_name, hierachy from mis_users_role_hierachy');
-        while ($row = mysql_fetch_row($query)){$hierachy[$row[0]]= $row[1]; }
+        $station =& $app->getRecord();
+// HIER BIN ICH GERADE: SENSOR DROPDOWN EINFÜGEN        
+       $sensors = df_get_records_array('sensors', array('id_station'=>$station->val('id_station'),
+            'type_station'=>$station->val('type_station')));
+        
+        if (isset($sensors)){
+            $content = "The related sensors, hold by this station can be selected
+                by the dropdown list below or you can view <a href='index.php?-table=sensors&type_station=".
+                    $station->val('type_station')."&id_station=".$station->val('id_station')."'>all</a> sensors.";
+            $content .= "<table><tr><th>Sensors</th></tr>";
+            $content .= "<tr><td><select onchange='window.location.href=this.options[this.selectedIndex].value'>".
+                    "<option>Select a related Sensor...</option>";
+            foreach ($sensors as $sensor){
+                $content .= "<option value='index.php?-table=sensors&type_station=".$sensor->val('type_station')
+                        ."&id_station=".$sensor->val('id_station')."&sensor=".$sensor->val('sensor')
+                        ."&type_timeseries=".$sensor->val('type_timeseries')."'>".
+                        $sensor->val('description')."</option>";
+            }
+            $content .= "</select></td></tr></table>";
+        }
+        else {
+            $content = "This station doesn't hold any sensors, maybe you want to
+                delete it?";
+        }
+        
+        return array(
+            'content' => $content,
+            'class'   => 'main',
+            'label'   => 'related Links',
+            'order'   => 1
+        );
 
-        /* pass index information */
-        if (isset($user)){
-            $meta = array();
-            array_push($meta,$user->val('userid'));  
-            $station = array($record->val('type_station'), $record->val('id_station'));
-            array_push($meta, $station);
-        }
-        
-        
-        
-        if (isset($user) && $hierachy[$user->val('Role')] >= $hierachy['udi_data']){
-            return array(
-                'content'=>'<form action="import.php" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" /><br><span style="font-size: 150%;">Separation Char:   </span>   
-                    <input type="text" id="deli" name="delimeter" value="," style="width: 20px" /><br>
-                    <input type="submit" value="Import" />
-                    <input type="hidden" name="meta" value=\''.json_encode($meta).'\' /></form>',
-                'class'=>'main',
-                'label'=>'Import new Timeseries',
-                'order'=> 1
-            );
-        }
     }
     
     /**

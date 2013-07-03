@@ -401,10 +401,10 @@ function applyFilter(layer, EntryArray, filterMode, arg){       //arg is optiona
     layer.destroyFeatures();
     
     //filter the EntryArray
-    EntryArray = filter(EntryArray, filterMode, arg);
+    newArray = filter(EntryArray, filterMode, arg);
     
     /*fill the layer again*/
-    fillLayer(layer, EntryArray);
+    fillLayer(layer, newArray);
 }
 
 /** creates a OpenLayers Vector Feature on the given layer. EntryArray needs to 
@@ -448,18 +448,36 @@ function check_cbFilterTs(){
 
 /**
  * 
- */
+ 
 function applyAdvFilter(filterMode, index){
     applyFilter(meteostations, view_meteo, filterMode, index);
     applyFilter(hydrostations, view_hydro, filterMode, index);
     view_meteo = filter(view_meteo, filterMode, index);
     view_hydro = filter(view_hydro, filterMode, index);
+}*/
+
+function applyAdvFilter(filterMode, index){
+    applyFilter(meteostations, Meteo_Stations_Array, filterMode, index);
+    applyFilter(hydrostations, Hydro_Stations_Array, filterMode, index);
+    view_meteo = filter(Meteo_Stations_Array, filterMode, index);
+    view_hydro = filter(Hydro_Stations_Array, filterMode, index);
+    
+    cbState = document.getElementById('cbFilterTs').checked;
+    if (cbState){
+        applyFilter(meteostations, view_meteo, 'ts');
+        applyFilter(hydrostations, view_hydro, 'ts');
+    }
 }
+
 
 /**
  *
  */
 function whereAmI(lon, lat){
+    if (lon < 28.8 || lon > 30.9 || lat > -1.03 || lat < -2.84){
+        alert ('The location '+lon+', '+lat+' is probably not within Rwanda.' );
+    }
+    
     whereami.destroyFeatures();
     askLocation = new OpenLayers.Feature.Vector(
             new OpenLayers.Geometry.Point(lon,lat).transform(
