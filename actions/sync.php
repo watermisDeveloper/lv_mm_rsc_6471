@@ -37,7 +37,9 @@ class actions_sync {
      * @see sync_rivers
      * @see sync_discharge_measrmnts
      * @see sync_rating_dates
-     * @version 1.0
+     * @see sync_rating_hk
+     * @see sync_rating_hq
+     * @version 1.1
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
     function run_sync(){
@@ -94,7 +96,25 @@ class actions_sync {
            unlink('tmp_sync/rating_dates.csv');
        } 
        else { echo  "<p>rating_dates.csv was not found.</p>"; }
-       
+
+       if(file_exists('tmp_sync/rating_hk.csv')){
+           if(($i = $this->sync_rating_hk('tmp_sync/rating_hk.csv')) > 0){
+               echo  "<p>$i rating H-K were synchronized</p>";
+           } 
+           else { echo  "<p>rating_hk.csv has a corrupt format.</p>"; }
+           unlink('tmp_sync/rating_hk.csv');
+       } 
+       else { echo  "<p>rating_hk.csv was not found.</p>"; }
+
+       if(file_exists('tmp_sync/rating_hq.csv')){
+           if(($i = $this->sync_rating_hq('tmp_sync/rating_hq.csv')) > 0){
+               echo  "<p>$i rating H-Q were synchronized</p>";
+           } 
+           else { echo  "<p>rating_hq.csv has a corrupt format.</p>"; }
+           unlink('tmp_sync/rating_hq.csv');
+       } 
+       else { echo  "<p>rating_hq.csv was not found.</p>"; }
+
        /* remove the synchrnization folder again */
        rmdir('tmp_sync/');
     }
@@ -309,11 +329,73 @@ class actions_sync {
         }
         fclose($rating);
     }
+
+    /** 
+     * sync_rating_hk function
+     * opens $filePath in tmp_sync folder and uploads content to rating_hk
+     * table using a INSERT ON DUPLICATE KEY UPDATE SQL query. Lines are checked
+     * for having 8 columns, as required by the database.
+     * 
+     * @return int number of inserted or updated rows
+     * @param String $filePath path to the file to upload
+     * @version 1.0
+     * @author Mirko Maelicke <mirko@maelicke-online.de>
+     */
+    function sync_rating_hk($filePath){
+        if (($hk = fopen($filePath, 'r')) !== FALSE){
+            $i = 0;
+            while (($row = fgetcsv($hk, 0, ',')) !== FALSE){
+                if (count($row) == 8){
+                    $query = "insert into rating_hk (`type_station` ,`id_station` ,`sensor` ,`type_timeseries` ,
+                        `sensor_output` ,`date_validity` ,`h` ,`k`) values 
+                        ('".$row[0]."','".$row[1]."','".$row[2]."','".$row[3]."','".$row[4]."','"
+                        .$row[5]."','".$row[6]."','".$row[7]."') 
+                        on duplicate key update k=values(k)";
+                mysql_query($query, df_db());
+                $i++;
+                }
+            }
+            return $i;
+        }
+        fclose($hk);
+    }
+
+    /** 
+     * sync_rating_hq function
+     * opens $filePath in tmp_sync folder and uploads content to rating_hq
+     * table using a INSERT ON DUPLICATE KEY UPDATE SQL query. Lines are checked
+     * for having 8 columns, as required by the database.
+     * 
+     * @return int number of inserted or updated rows
+     * @param String $filePath path to the file to upload
+     * @version 1.0
+     * @author Mirko Maelicke <mirko@maelicke-online.de>
+     */
+    function sync_rating_hq($filePath){
+        if (($hq = fopen($filePath, 'r')) !== FALSE){
+            $i = 0;
+            while (($row = fgetcsv($hq, 0, ',')) !== FALSE){
+                if (count($row) == 8){
+                    $query = "insert into rating_hq (`type_station` ,`id_station` ,`sensor` ,`type_timeseries` ,
+                        `sensor_output` ,`date_validity` ,`h` ,`q`) values 
+                        ('".$row[0]."','".$row[1]."','".$row[2]."','".$row[3]."','".$row[4]."','"
+                        .$row[5]."','".$row[6]."','".$row[7]."') 
+                        on duplicate key update q=values(q)";
+                mysql_query($query, df_db());
+                $i++;
+                }
+            }
+            return $i;
+        }
+        fclose($hq);
+    }
+    
     
     /** 
      * rmSyncDir function
      * secure removal of all tmp_sync dir content and dir removal afterwads
      * 
+     * @deprecated since version 1.0
      * @version 1.0
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */   
