@@ -6,7 +6,6 @@
  * denied. va_data user can only plot data of aggregation type M or A, as well 
  * as their own data. Higher permission roles can plot any data.
  * 
- * @todo Redirect to a formatted message Page instead of die message L. 62
  * @version 1.0
  * @author Mirko Maelicke <mirko@maelicke-online.de>
  */

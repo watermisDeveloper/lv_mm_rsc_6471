@@ -7,5 +7,10 @@
             <input type="file" name="zipfile" /><br>
             <input type="submit" value="Start" />
         </form>
+        
+        <h1>Timeseries Import</h1>
+        <p>{define_slot name='import_message'}{/define_slot}</p>
+        <p>For import please select the timeseries CSV below:</p>
+       {define_slot name ="import_form"}{/define_slot}
     {/fill_slot}
 {/use_macro}

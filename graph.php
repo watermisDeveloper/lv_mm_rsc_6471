@@ -2,7 +2,8 @@
 <html>
     <head>
 <?php
-/** Plotting script for WaterMIS - a xataface 2.0alpha application
+/** 
+ * Plotting script for WaterMIS - a xataface 2.0alpha application
  * @abstract Uses Highcharts JS to plot timeseries of openstation
  * Codes retrieved from the hardcoded values in Hydraccess and subsequently in the mySQL data model
  * @todo Verify if needed to be put in a table or not
@@ -12,6 +13,9 @@
 $sensor_type = array('C'=>'Stages','D'=>'Discharge','P'=>'Precipitation','Q'=>'Quality',
     'M'=>'Meteorological','T'=>'Temperature','H'=>'Humidity','E'=>'Evaporation','L'=>'Groundwater Level');
 $sensor_type_unit = array('C'=>'cm','D'=>'m³/s','P'=>'mm','Q'=>'','M'=>'','T'=>'°C','H'=>'%','E'=>'mm','L'=>'cm');
+$unit = 'na';preg_match('/\(.*\)/', $record->val('sensortype'), $unit);
+if (!isset($unit[0])){ $unit[0] = $sensor_type_unit[$record->val('type_timeseries')];}
+$unit[0] = trim($unit[0], '()');
 $sensor_type_color = array('C'=>'brown','D'=>'blue','P'=>'blue','Q'=>'green','M'=>'yellow',
     'T'=>'red','H'=>'grey','E'=>'orange','L'=>'black');
 $chart_type = array('C'=>'area','D'=>'line','P'=>'column','Q'=>'line','M'=>'line','T'=>'line',
@@ -146,11 +150,11 @@ $(function () {
         },
         yAxis: {
             title: {
-                text: '<?php echo $sensor_type[$record->val('type_timeseries')];?> [<?php echo $sensor_type_unit[$record->val('type_timeseries')];?>]'
+                text: '<?php echo $sensor_type[$record->val('type_timeseries')];?> [<?php echo $unit[0];?>]'
             },
             labels: {
                 formatter: function(){
-                    return this.value + ' <?php echo $sensor_type_unit[$record->val('type_timeseries')];?>'
+                    return this.value + ' <?php echo $unit[0];?>'
                 }
             }
         },
@@ -189,9 +193,8 @@ $(document).ready(function(){
         <div class="main">
             <?php df_display(array(),'Dataface_Logo.html');?>
             <ul class="sidebar">
-                <li><a href="<?php echo 'index.php?-table=sensors&-action=view&type_station='.
-                        $record->val('type_station').'&id_station='.$record->val('id_station').'&sensor='.
-                        $record->val('sensor').'&type_timeseries='.$record->val('type_timeseries').''; ?>">
+                <li><a href="<?php echo 'index.php?-table=stations&-action=view&type_station='.
+                        $record->val('type_station').'&id_station='.$record->val('id_station').''; ?>">
                         <img src="images/sb_back.png" alt="  " /><span>back</span></a></li>
                 <li><div  id="sb_table"><img src="images/sb_table.gif" alt="  " /><span>table</span></div></li>
                 <li><div id="sb_structure"><img src="images/sb_structure.png" alt="  " /><span>structure</span></div></li>
@@ -204,13 +207,27 @@ $(document).ready(function(){
             <div id="toggle_table" class="toggle">View as table</div>
             <div id="table" class="content">
                 <table>
-                    <tr><th>Date</th><th><?php echo "{$sensor_type[$record->val('type_timeseries')]} [{$sensor_type_unit[$record->val('type_timeseries')]}]"; ?></th></tr>
+                    <tr><th>Date</th><th><?php echo "{$sensor_type[$record->val('type_timeseries')]} [{$unit[0]}]"; ?></th></tr>
                     <?php
                     foreach ($data as $row){
                         echo "<tr><td>";
                         $date = new DateTime;
                         date_timestamp_set($date, $row[0]);
-                        echo $date->format('d.m.Y');
+                        if ($agg === 'D'){
+                            echo $date->format('d.m.Y H');
+                        }
+                        elseif ($agg === 'J'){
+                            echo $date->format('d.m.Y');
+                        }
+                        elseif ($agg === 'M'){
+                            echo $date->format('M Y');
+                        }
+                        elseif ($agg === 'A') {
+                            echo $date->format('Y');                 
+                        }
+                        else {
+                            echo $date->format('d.m.Y H:i');
+                        }
                         echo "</td><td>{$row[1]} </td></tr>";
                     }
                     ?>
