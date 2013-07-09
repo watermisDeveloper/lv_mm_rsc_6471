@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <?php
 if (isset($_GET['discard'])){
-    remove_tmp_sync();
+    //remove_tmp_sync();
+    secRmDir('tmp_sync/');
     die('<meta http-equiv="refresh" content="0; URL=index.php?-action=startSync">');
 }
 
@@ -44,6 +45,26 @@ function remove_tmp_sync(){
         unlink('tmp_sync/rating_dates.csv');}
     rmdir('tmp_sync/');
 }
+
+/**
+ * secRmDir function
+ * secure removal of a complete folder and all of its content
+ * 
+ * @version 1.0
+ * @author Mirko Maelicke <mirko@maelicke-online.de>
+ */
+function secRmDir($dirPath){
+    $files = scandir($dirPath);
+    $i = 0;
+    foreach ($files as $file){
+        if ($i > 1){
+            unlink("".$dirPath.$file); 
+        }
+        $i++;
+    }
+    rmdir($dirPath);
+}
+
 ?>
 <html>
     <head>
