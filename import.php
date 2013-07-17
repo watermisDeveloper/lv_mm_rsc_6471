@@ -7,6 +7,19 @@ if(isset($_POST['user'])){
     $delimeter = $_POST['delimeter'];
     $user = $_POST['user'];
 }
+//csv MIME type list
+$csv_mimetypes = array(
+    'text/csv',
+    'text/plain',
+    'application/csv',
+    'text/comma-separated-values',
+    'application/excel',
+    'application/vnd.ms-excel',
+    'application/vnd.msexcel',
+    'text/anytext',
+    'application/octet-stream',
+    'application/txt',
+);
 ?>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Water MIS Import form</title>
@@ -21,6 +34,11 @@ if(isset($_POST['user'])){
                     <meta http-equiv="refresh" content="5; URL=index.php?-table=startpage&-action=startSync">');
             }
             if (!isset($_FILES['file'])){ die('The file could not be found or is damaged!'); }
+            /* check the mime type */
+            if (!in_array($_FILES['file']['type'], $csv_mimetypes)) {
+                die('<meta http-equiv="refresh" content="0; URL=index.php?--msg=Upload+MIME+type+is+not+allowed.+Only+CSV+upload+is+supported">');
+            }
+            
             /* move uploaded file to new location */
             $location = 'temp/'.$user.$_FILES['file']['name'];
             move_uploaded_file($_FILES['file']['tmp_name'], $location);
