@@ -30,6 +30,22 @@ class tables_stations {
     }
     
     /**
+     * Returns usernames to fill the owner_userid select list.  
+     * @version 1.0
+     * @author Lavuun Verstraete <verstraete@sher.be>
+     */
+    function valuelist__mis_users(){
+        static $mis_users = -1;
+        if ( !is_array($mis_users) ){
+            $mis_users = array();
+            $res = mysql_query("select userid, username from mis_users", df_db());
+            if ( !$res ) throw new Exception(mysql_error(df_db()));
+            while ($row = mysql_fetch_row($res) ) $mis_users[$row[0]] = $row[1];
+    }
+    return $mis_users;
+    }
+    
+    /**
      * Create a new section for each station Record to include a OpenLayers
      * map object, showing the station.
      * 
@@ -70,10 +86,10 @@ class tables_stations {
             $content .= "<option value='index.php?-table=sensors&type_station=".$sensor->val('type_station')
                     ."&id_station=".$sensor->val('id_station')."&sensor=".$sensor->val('sensor')
                     ."&type_timeseries=".$sensor->val('type_timeseries')."&-action=plot'>".
-                    $sensor->val('description')."</option>";
+                    $sensor->val('description')." [aggregation-sensor: ".$sensor->val('sensor')." | ".$sensor->val('sensortype')."]</option>";
         }
-        $content .= "</select>"; 
-        
+        $content .= "</select><br>"; 
+        $content .= "  Aggregation types are I (Instantenious), J (Daily) or M (Monthly)";
         return array(
             'content' => $content,
             'class' => 'main',
@@ -99,9 +115,9 @@ class tables_stations {
             'type_station'=>$station->val('type_station')));
         
         if (isset($sensors)){
-            $content = "The related sensors, hold by this station can be selected
-                by the dropdown list below or you can view <a href='index.php?-table=sensors&type_station=".
-                    $station->val('type_station')."&id_station=".$station->val('id_station')."'>all</a> sensors.";
+            $content = "The related sensors held by this station can be selected
+                by the dropdown list below <b><a href='index.php?-table=sensors&type_station=".
+                    $station->val('type_station')."&id_station=".$station->val('id_station')."'>or you can view all sensors.</a></b>";
             $content .= "<table><tr><th>Sensors</th></tr>";
             $content .= "<tr><td><select onchange='window.location.href=this.options[this.selectedIndex].value'>".
                     "<option>Select a related Sensor...</option>";
@@ -109,9 +125,12 @@ class tables_stations {
                 $content .= "<option value='index.php?-table=sensors&type_station=".$sensor->val('type_station')
                         ."&id_station=".$sensor->val('id_station')."&sensor=".$sensor->val('sensor')
                         ."&type_timeseries=".$sensor->val('type_timeseries')."'>".
-                        $sensor->val('description')."</option>";
+                        $sensor->val('description')." [aggregation-sensor: ".$sensor->val('sensor')." | ".$sensor->val('sensortype')."]</option>";
             }
+            
+            
             $content .= "</select></td></tr></table>";
+            $content .= "  Aggregation types are I (Instantenious), J (Daily) or M (Monthly)";
         }
         else {
             $content = "This station doesn't hold any sensors, maybe you want to
@@ -121,7 +140,7 @@ class tables_stations {
         return array(
             'content' => $content,
             'class'   => 'main',
-            'label'   => 'related Links',
+            'label'   => 'Related Links',
             'order'   => 1
         );
 
@@ -140,7 +159,7 @@ class tables_stations {
         echo "\t\t<!-- jQuery library (served from Google) -->\n";
         echo "\t\t<script src='//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js'></script>\n";
         echo "\t\t<!-- load OpenLayers -->\n";
-        echo "\t\t<script src='http://openlayers.org/api/OpenLayers.js'></script>\n";
+        echo "\t\t<script src='js/ol/OpenLayers.js'></script>\n";
         echo "<script type='text/javascript' src='js/stations.js'></script>\n";
         
         /*parse Station information to Javascript using JSON*/
