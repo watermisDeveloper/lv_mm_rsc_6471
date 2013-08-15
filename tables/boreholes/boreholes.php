@@ -39,7 +39,7 @@ class tables_boreholes {
      */
     function section__map(){
         return array(
-            'content'=>"<div style='width:300px; height:300px' style='
+            'content'=>"<div style='width:300px; height:200px' style='
                 margin-left:auto; margin-right:auto;' id='map'></div>",
             'class'=>'main',
             'label'=>'Map',
@@ -47,7 +47,10 @@ class tables_boreholes {
         );
     }
     
-
+    function block__boreholes_mapping(){
+        
+        echo "<!-- Map area -->";
+        echo "<div style='width:800px; height:600px' id='map'></div>";
     
     /**
      * includes necessary javascript files for map section
@@ -62,7 +65,7 @@ class tables_boreholes {
         echo "\t\t<!-- jQuery library (served from Google) -->\n";
         echo "\t\t<script src='//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js'></script>\n";
         echo "\t\t<!-- load OpenLayers -->\n";
-        echo "\t\t<script src='http://openlayers.org/api/OpenLayers.js'></script>\n";
+        echo "\t\t<script src='js/ol/OpenLayers.js'></script>\n";
         echo "<script type='text/javascript' src='js/boreholes.js'></script>\n";
         
         /*parse Station information to Javascript using JSON*/
@@ -73,6 +76,6 @@ class tables_boreholes {
             echo "</script>";
         }
     }
-}
+}}
 
 ?>
