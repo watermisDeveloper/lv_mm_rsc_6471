@@ -83,10 +83,16 @@ class tables_stations {
         $content .= "<option>Select Sensor...</option>";
         
         foreach ($sensors as $sensor){
+            /* Only include entries with id_station and type_station corresponding to the application instance (LV - v.1.1.3*/
+            if ($sensor->val('id_station') == $record->val('id_station') && $sensor->val('type_station') == $record->val('type_station')){
             $content .= "<option value='index.php?-table=sensors&type_station=".$sensor->val('type_station')
-                    ."&id_station=".$sensor->val('id_station')."&sensor=".$sensor->val('sensor')
-                    ."&type_timeseries=".$sensor->val('type_timeseries')."&-action=plot'>".
-                    $sensor->val('description')." [aggregation-sensor: ".$sensor->val('sensor')." | ".$sensor->val('sensortype')."]</option>";
+                    ."&id_station=".$sensor->val('id_station')
+                    ."&sensor=".$sensor->val('sensor')
+                    ."&type_timeseries=".$sensor->val('type_timeseries')
+                    ."&-action=plot'>"
+            /*      Changed content of dropdown list with more comprehensive entries (LV - v1.1.2)*/
+                    .$sensor->val('description')." [aggregation-sensor: ".$sensor->val('sensor')." | ".$sensor->val('sensortype')."]</option>";           
+            }
         }
         $content .= "</select><br>"; 
         $content .= "  Aggregation types are I (Instantenious), J (Daily) or M (Monthly)";
@@ -122,12 +128,20 @@ class tables_stations {
             $content .= "<tr><td><select onchange='window.location.href=this.options[this.selectedIndex].value'>".
                     "<option>Select a related Sensor...</option>";
             foreach ($sensors as $sensor){
-                $content .= "<option value='index.php?-table=sensors&type_station=".$sensor->val('type_station')
-                        ."&id_station=".$sensor->val('id_station')."&sensor=".$sensor->val('sensor')
-                        ."&type_timeseries=".$sensor->val('type_timeseries')."'>".
-                        $sensor->val('description')." [aggregation-sensor: ".$sensor->val('sensor')." | ".$sensor->val('sensortype')."]</option>";
+//                $content .= "<option value='index.php?-table=sensors&type_station=".$sensor->val('type_station')
+//                        ."&id_station=".$sensor->val('id_station')."&sensor=".$sensor->val('sensor')
+//                        ."&type_timeseries=".$sensor->val('type_timeseries')."'>"
+            /* Only include entries with id_station and type_station corresponding to the application instance (LV - v.1.1.3*/
+            if ($sensor->val('id_station') == $station->val('id_station') && $sensor->val('type_station') == $station->val('type_station')){
+            $content .= "<option value='index.php?-table=sensors&type_station=".$sensor->val('type_station')
+                    ."&id_station=".$sensor->val('id_station')
+                    ."&sensor=".$sensor->val('sensor')
+                    ."&type_timeseries=".$sensor->val('type_timeseries')
+                    ."&-action=plot'>"
+            /*      Changed content of dropdown list with more comprehensive entries (LV - v1.1.2)*/
+                        .$sensor->val('description')." [aggregation-sensor: ".$sensor->val('sensor')." | ".$sensor->val('sensortype')."]</option>";
             }
-            
+            }
             
             $content .= "</select></td></tr></table>";
             $content .= "  Aggregation types are I (Instantenious), J (Daily) or M (Monthly)";

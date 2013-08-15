@@ -227,3 +227,5 @@ templates_c/
 /js/ol/
 !/js/ol/theme/
 index.php
+!/js/ol/lib/FeaturePopups.js
+!/js/ol/lib/patches_OL-popup-autosize.js
