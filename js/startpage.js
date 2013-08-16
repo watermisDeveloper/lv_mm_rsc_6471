@@ -260,8 +260,9 @@ function init_map() {
             // To make the custom navtoolbar use the regular navtoolbar style
             this.displayClass = 'olControlNavToolbar';
             this.addControls([
+                //HELP button on basic utilization of the MAP interface
                 new OpenLayers.Control.Button({
-                    title:"How to use this map",
+                    title:"How to use this map interface",
  //                   displayClass: "HowToButton",
                     trigger: function() {alert('How to navigate\n\n'
                         + "\t Pan: hold left mouse key and drag map or use arrow keys\n"
@@ -275,6 +276,7 @@ function init_map() {
                         + '\t 3.Plot the selected timeseries\n'
                         );},
                     }),
+            //Zoom button to extent on RWANDA
                 new OpenLayers.Control.Button({
                     title: "Click to go to zoom to the whole country", 
                     id: 'btnMaxExtent',       
@@ -349,15 +351,15 @@ function showInfoBox(feature) {
     
     }
     else {
-    popup = new OpenLayers.Popup.FramedCloud('Info Box',
-                feature.geometry.getBounds().getCenterLonLat(),
-                null,
+        popup = new OpenLayers.Popup.FramedCloud('Info Box',
+                    feature.geometry.getBounds().getCenterLonLat(),
+                    null,
                 "<p align='center'><b>"+selectedFeature.layer.name+"</b></p><hr>"+
-                "<p>Name: "+Meta[''+feature.id].name+" - ID: "+Meta[''+feature.id].id+"</p>"+
-                "<a href='index.php?-table=stations&name_station="+Meta[''+feature.id].name+"&-action=browse'>"+
-                "Open station details "+timeseriesAvail+"</a>",
-                null, true, closePopup);
-    }
+                    "<p>Name: "+Meta[''+feature.id].name+" - ID: "+Meta[''+feature.id].id+"</p>"+
+                    "<a href='index.php?-table=stations&name_station="+Meta[''+feature.id].name+"&-action=browse'>"+
+                    "Open station details "+timeseriesAvail+"</a>",
+                    null, true, closePopup);
+        }
 //    //color setting (NOT WORKING??)
 //    if(Meta[''+feature.id].ts == 'yes'){
 //        popup.backgroundColor = '#81F781';
