@@ -60,7 +60,6 @@ $(function(){
     $(document).tooltip;
 });
 
-
 /* OpenLayers map settings */
 var map, hydrostations, meteostations,view_hydro,view_meteo, rwandabounds, ask, popupTT, timeseriesAvail;
 var nb1_wms, nb2_wms, district_wms;
@@ -102,8 +101,10 @@ function init_map() {
     /* Set map Center and extend to show entire Rwanda */
     map.setCenter(new OpenLayers.LonLat(30.071100, -1.958018).transform(
             new OpenLayers.Projection('EPSG:4326'), map.getProjectionObject()), 8);
-    map.addControl(new OpenLayers.Control.LayerSwitcher());
-    map.addControl(new OpenLayers.Control.OverviewMap());
+    var ls = new OpenLayers.Control.LayerSwitcher();
+    map.addControl(ls);
+    ls.maximizeControl();
+    map.addControl(new OpenLayers.Control.OverviewMap({maximized: true}));
     var AMousePosition = new OpenLayers.Control.MousePosition();
     map.addControl(AMousePosition);
     $("div.olControlMousePosition").css("bottom","5px");
@@ -127,14 +128,12 @@ function init_map() {
             {   layers: 'nwrmp_wgs84tm:NB2_wgs84tm',styles: 'NB2',transparent: true,format: 'image/png'},
             {   isBaseLayer: false,opacity: 0.8,tiled: false,visibility:false}
           );              
-    district_wms = new OpenLayers.Layer.WMS("District", "http://41.215.250.87:8080/geoserver/wms?",
+    district_wms = new OpenLayers.Layer.WMS("District<hr>", "http://41.215.250.87:8080/geoserver/wms?",
             {   layers: 'nwrmp_wgs84tm:District_wgs84tm',styles: 'District',transparent: true,format: 'image/png'},
             {   isBaseLayer: false,opacity: 0.8,tiled: false,visibility:false}
           );
-    select = new OpenLayers.Layer.Vector("Selection", {styleMap: 
-                new OpenLayers.Style(OpenLayers.Feature.Vector.style["select"])
-            });
-    map.addLayers([nb1_wms,nb2_wms,district_wms,select]);    
+
+    map.addLayers([nb1_wms,nb2_wms,district_wms]);    
 
    //map.zoomToExtent(nb1_wms.getExtent());
     whereami = new OpenLayers.Layer.Vector('Where am I?', {
@@ -147,33 +146,56 @@ function init_map() {
     map.addLayer(whereami);
     whereami.displayInLayerSwitcher = false;
     
+    /*CREATE STATIONS AND BOREHOLES*/
+    /*ICONS*/
+    hydrostationsIcon = 'images/marker_blue2.png';
+    meteostationsIcon = 'images/gw.png';
+    boreholesIcon = 'images/dot.png';
     /*create Hydrostations layer*/
-    hydrostations = new OpenLayers.Layer.Vector('Hydrological Stations', {
+    hydrostations = new OpenLayers.Layer.Vector("Hydrometric stations", {
         styleMap: new OpenLayers.StyleMap({
-            externalGraphic: 'images/marker_blue.png',
-            graphicWidth: 20, graphicHeight: 24, graphicYOffset: -15,
-            pointRadius: 10
-            //title: '{$tooltip}'
+            externalGraphic: hydrostationsIcon,
+            graphicWidth: 16, graphicHeight: 16, graphicYOffset: -10,
+            pointRadius: 10, title: '{$tooltip}'
         })
     });
-    map.addLayer(hydrostations);
-    fillLayer(hydrostations, Hydro_Stations_Array);
-    view_hydro = Hydro_Stations_Array;
  
     /*create Meteostations layer*/
-    meteostations = new OpenLayers.Layer.Vector('Meteorological Stations', {
+    meteostations = new OpenLayers.Layer.Vector("Meteo stations", {
         styleMap: new OpenLayers.StyleMap({
-            externalGraphic: 'images/marker_red.png',
-            graphicWidth: 20, graphicHeight: 24, graphicYOffset: -15,
+            externalGraphic: meteostationsIcon,
+            graphicWidth: 13, graphicHeight: 13, graphicYOffset: -10,
             title: '{$tooltip}', pointRadius: 10
         })
     });
+    
+    var boreholes = new OpenLayers.Layer.Vector("Boreholes", {
+    styleMap: new OpenLayers.StyleMap({
+        externalGraphic: boreholesIcon,
+        graphicWidth: 10, graphicHeight: 10, graphicYOffset: -10,
+        pointRadius: 10
+        })
+    });
+    
+    //add and fill layers
+    map.addLayer(boreholes);
+    fillLayer(boreholes, Boreholes_Array);
+    view_bh = Boreholes_Array;
     map.addLayer(meteostations);
     fillLayer(meteostations, Meteo_Stations_Array);
     view_meteo = Meteo_Stations_Array;
+    map.addLayer(hydrostations);
+    fillLayer(hydrostations, Hydro_Stations_Array);
+    view_hydro = Hydro_Stations_Array;    
     
+    //SET visibility and style of layers
+    hydrostations.setVisibility(true);
+    meteostations.setVisibility(false);
+    boreholes.setVisibility(false);
+    hydrostations.setOpacity(0.8);
+    meteostations.setOpacity(0.7);
     //event Listener
-    selectControl = new OpenLayers.Control.SelectFeature([hydrostations, meteostations],{
+    selectControl = new OpenLayers.Control.SelectFeature([hydrostations, meteostations, boreholes],{
         clickout: true,
         multiple: false,
         hover: false,
@@ -214,13 +236,15 @@ function init_map() {
                     map.addPopup(popupTT);
                 },
                 featureunhighlighted: function(evt) {
-                    map.removePopup(evt.feature.popup);
+                    map.removePopup(evt.feature.popup);         
                 }}});
 
             map.addControl(hoverControl);
             hoverControl.activate();
             
     //Creation of a custom panel with a ZoomBox control with the alwaysZoom option sets to true
+    nav = new OpenLayers.Control.NavigationHistory();
+    map.addControl(nav);
     OpenLayers.Control.CustomNavToolbar = OpenLayers.Class(OpenLayers.Control.Panel, {
 
         /**
@@ -233,25 +257,31 @@ function init_map() {
 
         initialize: function(options) {
             OpenLayers.Control.Panel.prototype.initialize.apply(this, [options]);
-            this.addControls([
-                new OpenLayers.Control.Navigation({title:"Click to activate pan tool",
-//QUESTION FOR MIRKO: This trigger function does not seem to be working like in the 3rd Control.Button below...
-//After using control, selectControl not working
-                    trigger: function() {initSelectControl();}}),
-                //Here it come
-                new OpenLayers.Control.ZoomBox({title:"Click to activate zoom tool", 
-//QUESTION FOR MIRKO: This trigger function does not seem to be working like in the 3rd Control.Button below...
-//After using control, selectControl not working
-                    trigger: function() {initSelectControl();}}),
-                new OpenLayers.Control.Button({title: "Click to go to max extent", 
-                    id: 'btnMaxExtent',       
-                    type: OpenLayers.Control.TYPE_BUTTON,
-                    trigger: function() {map.zoomToExtent(rwandabounds); initSelectControl();}})
-                ]);
             // To make the custom navtoolbar use the regular navtoolbar style
             this.displayClass = 'olControlNavToolbar';
+            this.addControls([
+                new OpenLayers.Control.Button({
+                    title:"How to use this map",
+ //                   displayClass: "HowToButton",
+                    trigger: function() {alert('How to navigate\n\n'
+                        + "\t Pan: hold left mouse key and drag map or use arrow keys\n"
+                        + '\t Zoom in/out: use zoom + and - buttons\n'
+                        + '\t Zoom to area: click mouse button and draw rectangle while holding SHIFT key\n'
+                        + '\t Go to previous or next view: use Navigation history\n\n'
+                        + ''
+                        + 'How to find data related to a station\n\n'
+                        + '\t 1.Click the station\n'
+                        + '\t 2.Click the link to Jump to the station page\n'
+                        + '\t 3.Plot the selected timeseries\n'
+                        );},
+                    }),
+                new OpenLayers.Control.Button({
+                    title: "Click to go to zoom to the whole country", 
+                    id: 'btnMaxExtent',       
+                    type: OpenLayers.Control.TYPE_BUTTON,
+                    trigger: function() {map.zoomToExtent(rwandabounds); initSelectControl();}
+                })]);
         },
-
         /**
         * Method: draw
         * calls the default draw, and then activates mouse defaults.
@@ -264,16 +294,21 @@ function init_map() {
     });
     var panelCustomNavToolbar = new OpenLayers.Control.CustomNavToolbar();
         panelCustomNavToolbar.events.on({activate:initSelectControl()
-//            selectControl.deactivate();
-//            selectControl.activate();
-//            //Remove all popups
-//            while( map.popups.length ) {
-//                map.removePopup(map.popups[0]);
-//                }
     });
+    panelNavigationHistory = new OpenLayers.Control.Panel({title: "Navigation history"});
+    panelNavigationHistory.addControls([
+        nav.next, 
+        nav.previous
+    ]);
+
     map.addControl(panelCustomNavToolbar);
-    $("div.olControlNavToolbar").css("top","5px");
+    map.addControl(panelNavigationHistory);
+    
+    $("div.olControlNavToolbar").css("top","8px");
     $("div.olControlNavToolbar").css("left","60px");
+    $("div.olControlPanel").css("top","80px");
+    $("div.olControlPanel").css("left","65px");
+    
     map.addControl(new OpenLayers.Control.ScaleLine());
 }
 
@@ -302,14 +337,27 @@ function showInfoBox(feature) {
         timeseriesAvail = '(no timeseries)'; 
     }
     //Create it
+    if(feature.layer.name == 'Boreholes'){
+        popup = new OpenLayers.Popup.FramedCloud('Info Box',
+                feature.geometry.getBounds().getCenterLonLat(),
+                null,
+                "<p align='center'><b>"+selectedFeature.layer.name+"</b></p><hr>"+
+                "<p>Name: "+Meta[''+feature.id].name+" - ID: "+Meta[''+feature.id].id+"</p>"+
+                "<a href='index.php?-table=boreholes&id_borehole="+Meta[''+feature.id].id+"&-action=browse'>"+
+                "Open borehole details</a>",
+                null, true, closePopup);
+    
+    }
+    else {
     popup = new OpenLayers.Popup.FramedCloud('Info Box',
                 feature.geometry.getBounds().getCenterLonLat(),
                 null,
-                "<div>Station Name: "+Meta[''+feature.id].name+"</div>"+
-                "<p>Station ID: "+Meta[''+feature.id].id+"</p>"+
+                "<p align='center'><b>"+selectedFeature.layer.name+"</b></p><hr>"+
+                "<p>Name: "+Meta[''+feature.id].name+" - ID: "+Meta[''+feature.id].id+"</p>"+
                 "<a href='index.php?-table=stations&name_station="+Meta[''+feature.id].name+"&-action=browse'>"+
-                "Jump to this Station "+timeseriesAvail+"</a>",
+                "Open station details "+timeseriesAvail+"</a>",
                 null, true, closePopup);
+    }
 //    //color setting (NOT WORKING??)
 //    if(Meta[''+feature.id].ts == 'yes'){
 //        popup.backgroundColor = '#81F781';
@@ -327,9 +375,10 @@ function closePopup(evt) {
 }
 
 function hideInfoBox(feature) {
-    map.removePopup(feature.popup);
-    feature.popup.destroy();
-    feature.popup = null;
+    //Remove all popups
+    while( map.popups.length ) {
+         map.removePopup(map.popups[0]);
+        }
 }
 
 
