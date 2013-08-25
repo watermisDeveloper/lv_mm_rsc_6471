@@ -33,23 +33,11 @@
     <h1 id="startpage_title">{define_slot name="startpage_title"}Default Startpage{/define_slot}</h1>
     <p id="startpage_intro">
        {define_slot name="startpage_intro"}This is a default introduction. If you can read any default content
-       on this site, the template was not loaded properly. Please refere to a system administrator!{/define_slot}
+       on this site, the template was not loaded properly. Please refer to a system administrator!{/define_slot}
     </p>
+     <!-- Mapping area -->
+     {define_slot name="startpage_mapping"}{/define_slot}
     
-    <ul id="center_ul">
-        <li><div class="startpage_mapping">
-            {define_slot name="startpage_mapping"}{/define_slot}
-        </div></li>
-        <li><div class="startpage_quicklink">
-            {define_slot name="startpage_quicklink"}This is the default Quicklink area.{/define_slot}
-        </div></li>
-        <li><div class="startpage_rivers" style="height: 150px;">
-            {define_slot name="startpage_rivers"}{/define_slot}
-        </div></li>
-    </ul>
-    <div class="startpage_anouncment">
-        {define_slot name="startpage_anouncment"}This is the default Anouncement area{/define_slot}
-    </div>
-    {define_slot name="startpage_edit"}{/define_slot}
+     {define_slot name="startpage_edit"}{/define_slot}
     {/fill_slot}
 {/use_macro}

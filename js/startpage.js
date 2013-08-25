@@ -32,7 +32,9 @@ $(document).ready(function() {
         $('#edit_area').slideToggle('slow');
     });
     
-    /* Create handle for advanced Filter area*/+
+    /* Create handle for advanced Filter area*/
+    /* This function is depracted, use it if you use the old BxSlider on starpage */
+/*    
     $('#openAdvFilter').click(function(){
         if ($('#advFilter').css('display') == 'none'){
             $('.bx-viewport').css('height',parseInt($('.bx-viewport').css('height')) + parseInt($('#advFilter').css('height')));
@@ -46,7 +48,19 @@ $(document).ready(function() {
             $('#openAdvFilter').html('open advanced Filter...');
         } 
     });
-
+*/
+    
+    /* if you use the old BxSlider on starpage, comment this function */
+    $('#openAdvFilter').click(function(){
+        $('#advFilter').slideToggle('slow');
+        if ($('#advFilter').css('display') == 'none'){
+            $('#openAdvFilter').html('close advanced Filter...');
+        }
+        else {
+            $('#openAdvFilter').html('open advanced Filter...');
+        }
+    });
+    
     /* start the initialization function for the OpenLayers map*/
     init_map();
     

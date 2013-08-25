@@ -103,7 +103,7 @@ class conf_ApplicationDelegate {
      * proper sidebar is created. In order to make it easy and useable only links
      * should be shown, the user is allowed to use.
      * 
-     * @version 1.0
+     * @version 1.1
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
     function block__sidebar(){
@@ -125,7 +125,9 @@ class conf_ApplicationDelegate {
         }
         echo "<li><a href='index.php?-table=startpage'><img src='images/s_home.png' alt='Home' /><span>Start
             </span></a></li>";
-        echo "<li><a href='index.php?-table=stations'><img src='images/s_stations.png' alt='Home' /><span>Stations
+        echo "<li><a href='index.php?-table=stations'><img src='images/s_stations.png' alt='Stations' /><span>Stations
+            </span></a></li>";
+        echo "<li><a href='index.php?-table=boreholes'><img src='images/s_boreholes.png' alt='Boreholes'/><span>Boreholes
             </span></a></li>";
         if (isset($query['-table']) && $query['-table'] !== 'startpage' ){
             if (isset($user) && $hierachy[$user->val('Role')] >= $hierachy[$table_role->val('role_name_maxprv')]){
