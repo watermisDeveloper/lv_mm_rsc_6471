@@ -42,7 +42,7 @@ class tables_startpage {
      * will be included to the startpage_edit slot on smarty template 
      * startpage.html
      * 
-     * @version 1.0
+     * @version 1.1
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
     function block__startpage_edit(){
@@ -56,7 +56,7 @@ class tables_startpage {
                 echo '<div id="edit_area">';
                 echo '<ul><li><a href="'.$app->url('-table=startpage&-action=edit&element=title').'">Edit the title</a></li>';
                 echo '<li><a href="'.$app->url('-table=startpage&-action=edit&element=introduction').'">Edit the Introduction</a></li>';
-                echo '<li><a href="'.$app->url('-table=startpage&-action=new&element=anouncement').'">Add a new anouncement</a></li>';
+//                echo '<li><a href="'.$app->url('-table=startpage&-action=new&element=anouncement').'">Add a new anouncement</a></li>';
                 echo '<li><a href="'.$app->url('-table=mis_upl_history&-action=list').'">View upload history</a></li>';
                 echo '</ul><div>';
             }
@@ -78,10 +78,11 @@ class tables_startpage {
     /** Include the content of user role specific quicklink elements of 
      * startpage table These are quicklinks to table views acording to user role
      * 
-     * @version 1.0
+     * @version 1.1
+     * @deprecated since version 1.1
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
-    function block__startpage_quicklink(){
+    function DEP_block__startpage_quicklink(){
         $auth =& Dataface_AuthenticationTool::getInstance();
         $app = Dataface_Application::getInstance();
         $user =& $auth->getLoggedInUser();
@@ -117,7 +118,8 @@ class tables_startpage {
     /** Include a g OpenLayers map into the startpage_mapping
      *  Block of smarty template startpage.html 
      * 
-     * @version 1.0
+     * @version 1.1
+     * @deprecated since version 1.1
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
     function block__startpage_mapping(){
@@ -145,10 +147,11 @@ class tables_startpage {
      * Include all anouncment elements from startpage table and insert them 
      * into the anouncment unsorted list tag on smarty template startpage.html
      * 
-     * @version 1.0
+     * @version 1.1
+     * @deprecated since version 1.1
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
-    function block__startpage_anouncment(){
+    function DEP_block__startpage_anouncment(){
         $auth =& Dataface_AuthenticationTool::getInstance();
          $app = Dataface_Application::getInstance();
          $user =& $auth->getLoggedInUser();
@@ -241,10 +244,11 @@ class tables_startpage {
      * valued with a redirect to the stations table view filtered by selected 
      * rivername. 
      * 
-     * @version 1.0
+     * @version 1.1
+     * @deprecated since version 1.1
      * @author Mirko Maelicke <mirko@maelicke-online.de>
      */
-    function block__startpage_rivers(){
+    function DEP_block__startpage_rivers(){
         //get all rivers 
         $rivers = mysql_query("select * from rivers", df_db());
         
