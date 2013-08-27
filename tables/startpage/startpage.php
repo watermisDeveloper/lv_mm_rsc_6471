@@ -182,13 +182,13 @@ class tables_startpage {
      */
     function block__JSON_parse(){
         /*Load all Stations of type Hydro and parse to JSON*/
-        /* Refer to thwe wiki to get the Query explanation */
+        /* Refer to the wiki to get the Query explanation */
         $hydro_query = "SELECT DISTINCT name_station, longitude, latitude, 'yes' AS timeseries, id_station, id_nb1, 
-            river, id_district FROM stations
+            river, id_district, type_station AS idlayer FROM stations
             WHERE EXISTS (SELECT * FROM timeseries WHERE timeseries.id_station = stations.id_station
             AND timeseries.type_station = stations.type_station) AND type_station = 'H'
             UNION SELECT DISTINCT name_station, longitude, latitude, 'no' AS timeseries, id_station, id_nb1, 
-            river, id_district FROM stations
+            river, id_district, type_station AS idlayer  FROM stations
             WHERE NOT EXISTS (SELECT * FROM timeseries WHERE timeseries.id_station = stations.id_station 
             AND timeseries.type_station = stations.type_station) AND type_station = 'H'";
         //$hydrostations = mysql_query("Select name_station, longitude, latitude from stations where type_station = 'H'", df_db());
@@ -202,7 +202,7 @@ class tables_startpage {
                 echo "{'name': '".$station[0]."','lon':".
                     $station[1].",'lat':".$station[2].",'ts': '".$station[3]."','id':'".
                         $station[4]."','nb1':'".$station[5]."','riv':'".$station[6].
-                        "','dis':'".$station[7]."'},";
+                        "','dis':'".$station[7]."','idlayer':'".$station[8]."'},";
             }
         }
         echo "];";
@@ -214,7 +214,7 @@ class tables_startpage {
                             id_district, longitude, latitude, altitude, depth, 
                             deph_rock, stat_lvl, dyn_lvl, dia_drill, dia_pump, 
                             depth_wellscreen, flw_m3ph, beneficiaries, date_drill, 
-                            perm_mps, pump, depth_pump, owner, remark
+                            perm_mps, pump, depth_pump, owner, remark, 'BH' AS idlayer
                              FROM boreholes";
         $boreholes = mysql_query($boreholes_query, df_db());
         
@@ -223,11 +223,11 @@ class tables_startpage {
         echo "/*Hello from the map.php lavuun*/";
         echo "var Boreholes_Array = [";
         while ($borehole = mysql_fetch_row($boreholes)){
-            if ($borehole[1] != ""){
+            if ($borehole[7] != "" && $borehole[8] != ""){
                 echo "{'id_borehole': '".$borehole[0]."','lon':".
                     $borehole[7].",'lat':".$borehole[8].",'name': '".$borehole[4]."','id':'".
-                        $borehole[1]."','depth':'".$borehole[10]."','source':'".$borehole[3].
-                        "','altitude':'".$borehole[9]."'},";
+                        $borehole[0]."','depth':'".$borehole[10]."','source':'".$borehole[3].
+                        "','altitude':'".$borehole[9]."','idlayer':'".$borehole[25]."'},";
             }
         }
         echo "];";
@@ -237,11 +237,11 @@ class tables_startpage {
         /*Load all Stations of type Hydro and parse to JSON*/
         /* Refer to thwe wiki to get the Query explanation */
         $meteo_query = "SELECT DISTINCT name_station, longitude, latitude, 'yes' AS timeseries, id_station, id_nb1,
-            river, id_district FROM stations
+            river, id_district, type_station AS idlayer  FROM stations
             WHERE EXISTS (SELECT * FROM timeseries WHERE timeseries.id_station = stations.id_station
             AND timeseries.type_station = stations.type_station) AND type_station = 'M'
             UNION SELECT DISTINCT name_station, longitude, latitude, 'no' AS timeseries, id_station, id_nb1,
-            river, id_district FROM stations
+            river, id_district, type_station AS idlayer  FROM stations
             WHERE NOT EXISTS (SELECT * FROM timeseries WHERE timeseries.id_station = stations.id_station 
             AND timeseries.type_station = stations.type_station) AND type_station = 'M'";
         //$meteostations = mysql_query("Select name_station, longitude, latitude from stations where type_station = 'M'", df_db());
@@ -255,7 +255,7 @@ class tables_startpage {
                 echo "{'name': '".$station[0]."','lon':".
                     $station[1].",'lat':".$station[2].",'ts': '".$station[3]."','id':'".
                         $station[4]."','nb1':'".$station[5]."','riv':'".$station[6].
-                        "','dis':'".$station[7]."'},";
+                        "','dis':'".$station[7]."','idlayer':'".$station[8]."'},";
             }
         }
         echo "];";
